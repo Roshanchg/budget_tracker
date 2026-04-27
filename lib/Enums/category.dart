@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:serene/SomeConstants.dart';
 
 enum CATEGORY { MISC, SAVINGS, SHOPPING, FOOD, TRANSPORTATION, RENT, GYM }
 
@@ -38,6 +39,44 @@ extension CategoryExtension on CATEGORY {
         return Icons.house;
       case CATEGORY.GYM:
         return Icons.fitness_center;
+    }
+  }
+
+  Color get fgcolor {
+    switch (this) {
+      case CATEGORY.MISC:
+        return REDFOREGROUND;
+      case CATEGORY.FOOD:
+        return YELLOWFOREGROUND;
+      case CATEGORY.SAVINGS:
+        return GREENFOREGROUND;
+      case CATEGORY.SHOPPING:
+        return BLUEFOREGROUND;
+      case CATEGORY.TRANSPORTATION:
+        return ORANGEFOREGROUND;
+      case CATEGORY.RENT:
+        return PRIMARYCOLOR;
+      case CATEGORY.GYM:
+        return PINKFOREGROUND;
+    }
+  }
+
+  Color get bgcolor {
+    switch (this) {
+      case CATEGORY.MISC:
+        return REDBACKGROUND;
+      case CATEGORY.FOOD:
+        return YELLOWBACKGROUND;
+      case CATEGORY.SAVINGS:
+        return GREENBACKGROUND;
+      case CATEGORY.SHOPPING:
+        return BLUEBACKGROUND;
+      case CATEGORY.TRANSPORTATION:
+        return ORANGEBACKGROUND;
+      case CATEGORY.RENT:
+        return PURPLEBACKGROUND;
+      case CATEGORY.GYM:
+        return PINKBACKGROUND;
     }
   }
 
