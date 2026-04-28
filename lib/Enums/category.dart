@@ -17,7 +17,7 @@ extension CategoryExtension on CATEGORY {
       case CATEGORY.TRANSPORTATION:
         return 'Transportation';
       case CATEGORY.RENT:
-        return 'Rent / Mortgage';
+        return 'Rent & Housing';
       case CATEGORY.GYM:
         return 'Gym & Fitness';
     }

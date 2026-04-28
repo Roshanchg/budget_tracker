@@ -9,21 +9,60 @@ class ExpensePage extends StatefulWidget {
 }
 
 class _ExpensePageState extends State<ExpensePage> {
+  int _activeFilterIndex = 0;
+
+  @override
+  void initState() {}
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: EdgeInsets.all(20),
       children: [
         Container(
+          color: null,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          padding: EdgeInsets.all(20),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("Total Spent this month"),
-                  Text("Rs. 5400.80"),
+                  Text(
+                    "Rs. 5400.80",
+                    style: TextStyle(
+                      fontWeight: FontWeight(600),
+                      fontSize: 28,
+                      color: PURPLEFOREGROUND,
+                    ),
+                  ),
                 ],
               ),
-              Text("+12%"),
+              Container(
+                color: null,
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: EdgeInsetsGeometry.directional(
+                  start: 10,
+                  end: 10,
+                  top: 4,
+                  bottom: 4,
+                ),
+                child: Text(
+                  "+ 12%",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight(700),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -39,11 +78,25 @@ class _ExpensePageState extends State<ExpensePage> {
                 return Row(
                   children: [
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        setState(() {
+                          _activeFilterIndex = index;
+                        });
+                      },
                       style: TextButton.styleFrom(
-                        backgroundColor: Color(0xffECE6EE),
+                        backgroundColor: (_activeFilterIndex == index)
+                            ? PURPLEFOREGROUND
+                            : Color(0xFFECE6EE),
                       ),
-                      child: const Text("All"),
+                      child: Text(
+                        "All",
+                        style: TextStyle(
+                          color: (_activeFilterIndex == index)
+                              ? Colors.white
+                              : Colors.black,
+                          fontWeight: FontWeight(400),
+                        ),
+                      ),
                     ),
                     SizedBox(width: 10),
                   ],
@@ -52,11 +105,25 @@ class _ExpensePageState extends State<ExpensePage> {
               return Row(
                 children: [
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      setState(() {
+                        _activeFilterIndex = index;
+                      });
+                    },
                     style: TextButton.styleFrom(
-                      backgroundColor: Color(0xffECE6EE),
+                      backgroundColor: (_activeFilterIndex == index)
+                          ? PURPLEFOREGROUND
+                          : Color(0xFFECE6EE),
                     ),
-                    child: Text(CATEGORY.values[index - 1].displayName),
+                    child: Text(
+                      CATEGORY.values[index - 1].displayName,
+                      style: TextStyle(
+                        color: (_activeFilterIndex == index)
+                            ? Colors.white
+                            : Colors.black,
+                        fontWeight: FontWeight(400),
+                      ),
+                    ),
                   ),
                   SizedBox(width: 10),
                 ],
@@ -67,8 +134,12 @@ class _ExpensePageState extends State<ExpensePage> {
         Column(
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Recent Expenses"),
+                const Text(
+                  "Recent Expenses",
+                  style: TextStyle(fontWeight: FontWeight(500), fontSize: 20),
+                ),
                 TextButton(
                   onPressed: () {},
                   child: const Text("View Analysis"),

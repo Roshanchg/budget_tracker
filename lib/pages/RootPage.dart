@@ -32,17 +32,19 @@ class _RootPageState extends State<RootPage> {
       ),
 
       body: pages[_currentActiveIndex],
-      floatingActionButton: IconButton(
-        style: IconButton.styleFrom(
-          backgroundColor: PRIMARYCOLOR,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        onPressed: () => {},
-        icon: Icon(Icons.add),
-      ),
+      floatingActionButton: (_currentActiveIndex == 3)
+          ? null
+          : IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: PRIMARYCOLOR,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () => {},
+              icon: Icon(Icons.add),
+            ),
     );
   }
 }
