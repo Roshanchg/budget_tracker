@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
 import 'package:serene/SomeConstants.dart';

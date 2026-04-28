@@ -12,7 +12,9 @@ class _ExpensePageState extends State<ExpensePage> {
   int _activeFilterIndex = 0;
 
   @override
-  void initState() {}
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
