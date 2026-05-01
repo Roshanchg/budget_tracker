@@ -1,8 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:serene/SomeConstants.dart';
-import 'package:serene/pages/HomePage.dart';
 import 'package:serene/pages/RootPage.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,10 +12,12 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPinMode = true;
   int _insertedPinCount = 0;
   final int _totalPinCount = 4;
+  String _pin = "";
   @override
   void initState() {
     _isPinMode = true;
-    _insertedPinCount = 2;
+    _pin = "";
+    _insertedPinCount = _pin.length;
     super.initState();
   }
 
@@ -165,12 +164,22 @@ class _LoginPageState extends State<LoginPage> {
                   _buildDialTextButton("8"),
                   _buildDialTextButton("9"),
 
-                  _buildDialIconButton(
-                    Icons.fingerprint,
-                    color: PURPLEFOREGROUND,
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.fingerprint, color: PURPLEFOREGROUND),
                   ),
                   _buildDialTextButton("0"),
-                  _buildDialIconButton(Icons.backspace),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        if (_pin.length >= 1) {
+                          _pin = _pin.substring(0, _pin.length - 1);
+                          _insertedPinCount = _pin.length;
+                        }
+                      });
+                    },
+                    icon: Icon(Icons.backspace, color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -211,25 +220,25 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-}
 
-Widget _buildDialTextButton(String number) {
-  return TextButton(
-    onPressed: () {},
-    child: Text(
-      number,
-      style: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight(500),
-        color: Colors.black,
+  Widget _buildDialTextButton(String number) {
+    return TextButton(
+      onPressed: () {
+        setState(() {
+          if (_pin.length < 4) {
+            _pin += number;
+            _insertedPinCount = _pin.length;
+          }
+        });
+      },
+      child: Text(
+        number,
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight(500),
+          color: Colors.black,
+        ),
       ),
-    ),
-  );
-}
-
-Widget _buildDialIconButton(IconData icondata, {Color color = Colors.grey}) {
-  return IconButton(
-    onPressed: () {},
-    icon: Icon(icondata, color: color),
-  );
+    );
+  }
 }

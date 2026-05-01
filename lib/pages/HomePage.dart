@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/pages/subPages/addBudgetPage.dart';
+import 'package:serene/pages/subPages/addExpensesPage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -372,7 +374,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => {},
+                      onPressed: () => {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddExpensePage(),
+                          ),
+                        ),
+                      },
                       icon: Icon(Icons.arrow_forward_ios, size: 16),
                     ),
                   ],
@@ -415,7 +424,14 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                     IconButton(
-                      onPressed: () => {},
+                      onPressed: () => {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AddBudgetPage(),
+                          ),
+                        ),
+                      },
                       icon: Icon(Icons.arrow_forward_ios, size: 16),
                     ),
                   ],

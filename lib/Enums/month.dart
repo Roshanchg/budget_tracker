@@ -15,7 +15,7 @@ enum MONTH {
 
 extension MonthExtension on MONTH {
   String get prettyName {
-    return name;
+    return name[0] + name.substring(1, name.length).toLowerCase();
   }
 
   String get chartName {
