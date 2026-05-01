@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,13 +11,33 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<double> monthIncome = [12000, 13000, 13000, 13500, 17000];
+  List<MONTH> months = [];
   List<FlSpot> spots = [];
+  MONTH currentMonth = MONTH.JANUARY;
+  int _monthFirst = 1;
+  int _monthLast = 5;
+
   @override
   void initState() {
     super.initState();
     spots = monthIncome.asMap().entries.map((entry) {
       return FlSpot(entry.key.toDouble(), entry.value);
     }).toList();
+    currentMonth = MONTH.APRIL;
+    _monthLast = currentMonth.number;
+    if (_monthLast - 5 < 0) {
+      _monthFirst = 13 - (5 - _monthLast);
+    } else {
+      _monthFirst = (_monthLast - 5) + 1;
+    }
+
+    for (int i = 0; i < 6; i++) {
+      int numb = _monthFirst + i;
+      if (numb > 12) {
+        numb = numb - 12;
+      }
+      months.add(numb.month);
+    }
   }
 
   @override
@@ -124,25 +145,6 @@ class _HomePageState extends State<HomePage> {
                           showTitles: true,
                           interval: 1,
                           getTitlesWidget: (value, meta) {
-                            const months = [
-                              'Jan',
-                              'Feb',
-                              'Mar',
-                              'Apr',
-                              'May',
-                              'Jun',
-                              'Jul',
-                              'Aug',
-                              'Sep',
-                              'Oct',
-                              'Nov',
-                              'Dec',
-                            ];
-
-                            // Only show at exact integer positions
-                            if (value % 1 == 0 && value >= 0 && value < 12) {
-                              return Text(months[value.toInt()]);
-                            }
                             return const Text('');
                           },
                         ),

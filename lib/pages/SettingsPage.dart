@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/pages/LoginPage.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -338,7 +339,12 @@ class _SettingsPageState extends State<SettingsPage> {
             borderRadius: BorderRadius.circular(12),
           ),
           child: TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
             child: const Text("Log Out", style: TextStyle(color: Colors.white)),
           ),
         ),
