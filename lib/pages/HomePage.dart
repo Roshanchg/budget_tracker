@@ -1,9 +1,13 @@
+import 'dart:developer';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/pages/subPages/addBudgetPage.dart';
 import 'package:serene/pages/subPages/addExpensesPage.dart';
+import 'package:serene/pages/subPages/addIncomePage.dart';
+import 'package:serene/sessionManagement.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,6 +43,18 @@ class _HomePageState extends State<HomePage> {
         numb = numb - 12;
       }
       months.add(numb.month);
+    }
+    WidgetsBinding.instance.addPersistentFrameCallback((_) {
+      _checkForValidIncome();
+    });
+  }
+
+  void _checkForValidIncome() {
+    if (SessionStorage().income == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (conetxt) => AddIncomePage()),
+      );
     }
   }
 

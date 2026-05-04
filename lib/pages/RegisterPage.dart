@@ -3,17 +3,20 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:serene/Authenticator.dart';
 import 'package:serene/SomeConstants.dart';
-import 'package:serene/pages/RegisterPage.dart';
+import 'package:serene/classes/Session.dart';
+import 'package:serene/classes/User.dart';
+import 'package:serene/dbHandling.dart';
+import 'package:serene/pages/LoginPage.dart';
 import 'package:serene/pages/RootPage.dart';
 import 'package:serene/sessionManagement.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   bool _isPinMode = true;
   int _insertedPinCount = 0;
   final int _totalPinCount = 4;
@@ -52,72 +55,6 @@ class _LoginPageState extends State<LoginPage> {
             ),
             const Text("Your Budgeting Application"),
             const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsetsGeometry.directional(start: 4, end: 4),
-                  color: null,
-                  decoration: BoxDecoration(
-                    color: Color.fromARGB(80, 186, 186, 186),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: (_isPinMode)
-                              ? Colors.white
-                              : Colors.transparent,
-                          padding: EdgeInsetsGeometry.directional(
-                            start: 40,
-                            end: 40,
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPinMode = true;
-                          });
-                        },
-                        child: Text(
-                          "PIN Code",
-                          style: TextStyle(
-                            color: (_isPinMode)
-                                ? Color(0xff4F378A)
-                                : Color(0xff7A7582),
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: (_isPinMode)
-                              ? Colors.transparent
-                              : Colors.white,
-                          padding: EdgeInsetsGeometry.directional(
-                            start: 40,
-                            end: 40,
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _isPinMode = false;
-                          });
-                        },
-                        child: Text(
-                          "Fingerprint",
-                          style: TextStyle(
-                            color: (!_isPinMode)
-                                ? Color(0xff4F378A)
-                                : Color(0xff7A7582),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
 
             // PIN CIRCLES
             Container(
@@ -171,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   IconButton(
                     onPressed: () {},
-                    icon: Icon(Icons.fingerprint, color: PURPLEFOREGROUND),
+                    icon: Icon(Icons.fingerprint, color: Colors.grey),
                   ),
                   _buildDialTextButton("0"),
                   IconButton(
@@ -198,9 +135,9 @@ class _LoginPageState extends State<LoginPage> {
               ),
               height: 54,
               child: TextButton(
-                onPressed: () async{
+                onPressed: () async {
                   try {
-                    Authenticator.login(int.parse(_pin));
+                    await Authenticator.register(int.parse(_pin));
                     if (await SessionManagement.sessionExists()) {
                       Navigator.pushReplacement(
                         context,
@@ -208,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                       );
                     }
                   } catch (e) {
-                    log("Parsing error login page: $e");
+                    log("Parsing Error: $e");
                   }
                 },
 
@@ -216,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
                   backgroundColor: Colors.transparent,
                 ),
                 child: const Text(
-                  "Unlock Vault",
+                  "Create PIN",
                   style: TextStyle(color: Colors.white),
                 ),
               ),
@@ -227,15 +164,33 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: () {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => RegisterPage()),
+                  MaterialPageRoute(builder: (context) => LoginPage()),
                 );
               },
-              child: const Text("Forgot Pin? Reset"),
+              child: const Text("Know PIN? Log in"),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _createNewRootUser(int pin) async {
+    User newUser = User(name: "Root User", pin: pin);
+    final int id = await DatabaseHelper().addUser(newUser);
+    if (id >= 0) {
+      DateTime now = DateTime.now();
+      DateTime today = DateTime(now.year, now.month, now.day);
+
+      Session newSession = Session(id: id, userId: id, date: today);
+      int sessionId = await DatabaseHelper().addSession(newSession);
+      if (sessionId >= 0) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RootPage()),
+        );
+      }
+    }
   }
 
   Widget _buildDialTextButton(String number) {

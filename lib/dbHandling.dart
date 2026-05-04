@@ -6,7 +6,7 @@ import 'package:serene/classes/Budgets.dart';
 import 'package:serene/classes/Expense.dart';
 import 'package:serene/classes/Session.dart';
 import 'package:serene/classes/User.dart';
-import 'package:serene/classes/income.dart';
+import 'package:serene/classes/Income.dart';
 import 'package:sqflite/sqflite.dart';
 
 const String databaseName = "financeDB.db";
@@ -34,7 +34,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
         currency TEXT NOT NULL,
         biometric INTEGER NOT NULL DEFAULT 0,
         dark_mode INTEGER NOT NULL DEFAULT 0,
@@ -47,7 +47,7 @@ class DatabaseHelper {
       CREATE TABLE sessions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
-        date DATETIME NOT NULL,
+        date TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
@@ -59,7 +59,7 @@ class DatabaseHelper {
         user_id INTEGER NOT NULL,
         amount INTEGER NOT NULL,
         frequency TEXT NOT NULL,
-        date_added DATETIME NOT NULL,
+        date_added TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
       )
     ''');
@@ -72,7 +72,7 @@ class DatabaseHelper {
         income_id INTEGER NOT NULL,
         category TEXT NOT NULL,
         name TEXT NOT NULL,
-        limit INTEGER NOT NULL,
+        amount INTEGER NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (income_id) REFERENCES income (id) ON DELETE CASCADE
       )
@@ -86,7 +86,7 @@ class DatabaseHelper {
         income_id INTEGER NOT NULL,
         amount INTEGER NOT NULL,
         category TEXT NOT NULL,
-        datetime DATETIME NOT NULL,
+        datetime TEXT NOT NULL,
         note TEXT,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (income_id) REFERENCES income (id) ON DELETE CASCADE
@@ -183,14 +183,14 @@ class DatabaseHelper {
     }
   }
 
-  Future<List<Session>> getAllSessions() async {
+  Future<List<Session>?> getAllSessions() async {
     try {
       final db = await database;
       final List<Map<String, dynamic>> maps = await db.query('sessions');
       return maps.map((map) => Session.fromMap(map)).toList();
     } catch (e) {
       log(e.toString());
-      return [];
+      return null;
     }
   }
 
@@ -201,6 +201,24 @@ class DatabaseHelper {
         'sessions',
         where: 'id = ?',
         whereArgs: [id],
+      );
+      if (maps.isNotEmpty) {
+        return Session.fromMap(maps.first);
+      }
+      return null;
+    } catch (e) {
+      log(e.toString());
+      return null;
+    }
+  }
+
+  Future<Session?> getSessionByDate(DateTime date) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'sessions',
+        where: 'date = ?',
+        whereArgs: [date.toIso8601String()],
       );
       if (maps.isNotEmpty) {
         return Session.fromMap(maps.first);
@@ -315,7 +333,7 @@ class DatabaseHelper {
         'incomes',
         where: 'user_id = ? ',
         whereArgs: [userId],
-        orderBy: 'date_added ASC',
+        orderBy: 'date_added DESC',
       );
       if (maps.isNotEmpty) {
         return Income.fromMap(maps.first);
@@ -412,7 +430,7 @@ class DatabaseHelper {
         'budgets',
         where: 'income_id = ? ',
         whereArgs: [incomeId],
-        orderBy: 'limit DESC',
+        orderBy: 'amount DESC',
       );
       if (maps.isNotEmpty) {
         return maps.map((map) => Budgets.fromMap(map)).toList();
@@ -557,4 +575,14 @@ class DatabaseHelper {
   }
 
   // EXPENSES END;
+
+  Future<void> removeDB() async {
+    try {
+      final db = await database;
+      db.close();
+      await deleteDatabase(db.path);
+    } catch (e) {
+      log("IDK MAN");
+    }
+  }
 }

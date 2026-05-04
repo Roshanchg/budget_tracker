@@ -1,8 +1,8 @@
 class Session {
-  final int id;
+  final int? id;
   final int userId;
   final DateTime date;
-  const Session({required this.id, required this.userId, required this.date});
+  const Session({this.id, required this.userId, required this.date});
 
   factory Session.fromMap(Map<String, Object?> map) {
     return Session(
@@ -13,7 +13,7 @@ class Session {
   }
 
   Map<String, Object?> toMap() {
-    return {'id': id, 'user_id': userId, 'date': date};
+    return {'id': id, 'user_id': userId, 'date': date.toIso8601String()};
   }
 
   @override

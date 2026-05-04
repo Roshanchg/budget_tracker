@@ -1,7 +1,7 @@
 import 'package:serene/Enums/currency.dart';
 
 class User {
-  final int id;
+  final int? id;
   final String name;
   final CURRENCY currency;
   final bool biometric;
@@ -9,12 +9,12 @@ class User {
   final bool darkMode;
 
   const User({
-    required this.id,
-    required this.name,
-    required this.biometric,
-    required this.currency,
+    this.id = 0,
+    this.name = "Root User",
+    this.biometric = false,
+    this.currency = CURRENCY.NRP,
     required this.pin,
-    required this.darkMode,
+    this.darkMode = false,
   });
 
   factory User.fromMap(Map<String, Object?> map) {

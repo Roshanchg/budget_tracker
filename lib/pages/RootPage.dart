@@ -1,12 +1,19 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/classes/User.dart';
+import 'package:serene/dbHandling.dart';
 import 'package:serene/pages/BudgetingPage.dart';
 import 'package:serene/pages/ExpensePage.dart';
 import 'package:serene/pages/HomePage.dart';
+import 'package:serene/pages/LoginPage.dart';
+import 'package:serene/pages/RegisterPage.dart';
 import 'package:serene/pages/SettingsPage.dart';
 import 'package:serene/pages/subPages/addBudgetPage.dart';
 import 'package:serene/pages/subPages/addExpensesPage.dart';
 import 'package:serene/pages/subPages/addIncomePage.dart';
+import 'package:serene/sessionManagement.dart';
 
 class RootPage extends StatefulWidget {
   const RootPage({super.key});
@@ -28,6 +35,50 @@ class _RootPageState extends State<RootPage> {
     AddBudgetPage(),
   ];
   int _currentActiveIndex = 0;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkForLogin();
+    });
+  }
+
+  Future<void> _checkForLogin() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Center(child: CircularProgressIndicator()),
+    );
+    if (!await SessionManagement.sessionExists()) {
+      User? user = await DatabaseHelper().getUserById(0);
+      if (mounted) {
+        Navigator.pop(context);
+      }
+      if (user == null) {
+        log("User doesnot exist");
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => RegisterPage()),
+          );
+        }
+      } else {
+        log("User not logged in");
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginPage()),
+          );
+        }
+      }
+    } else {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+      log("${SessionStorage().user}, ${SessionStorage().session}");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

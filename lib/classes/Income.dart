@@ -31,7 +31,7 @@ class Income {
       'user_id': userId,
       'amount': amount,
       'frequency': frequency,
-      'date_added': dateAdded,
+      'date_added': dateAdded.toIso8601String(),
     };
   }
 

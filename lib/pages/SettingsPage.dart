@@ -14,10 +14,10 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   final TextEditingController _nameController = TextEditingController();
   CURRENCY _selectedCurrency = CURRENCY.NRP;
-  String _currentName = "Roshan Chaulagain";
+  String _currentName = "No Name";
   bool _biometricToggle = false;
-  String _firstName = "Your";
-  String _lastName = "Name";
+  String _firstName = "";
+  String _lastName = "";
   @override
   void initState() {
     super.initState();
@@ -211,7 +211,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               Icon(Icons.fingerprint, color: PURPLEFOREGROUND),
               const SizedBox(width: 14),
-              const Expanded(child: Text("Biometric Lock")),
+              const Expanded(child: Text("Biometric Unlock")),
               Switch(
                 inactiveThumbColor: Colors.white,
                 inactiveTrackColor: Colors.deepPurple[30],

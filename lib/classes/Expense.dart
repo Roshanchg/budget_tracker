@@ -39,7 +39,7 @@ class Expense {
       'category': category.asDbString,
       'note': note,
       'amount': amount,
-      'datetime': dateTime,
+      'datetime': dateTime.toIso8601String(),
     };
   }
 
