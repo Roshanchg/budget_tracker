@@ -1,17 +1,17 @@
 import 'package:serene/Enums/frequency.dart';
 
 class Income {
-  final int id;
+  final int? id;
   final int userId;
-  final int amount;
+  final double amount;
   final FREQUENCY frequency;
   final DateTime dateAdded;
 
   const Income({
-    required this.id,
+    this.id,
     required this.userId,
     required this.amount,
-    required this.frequency,
+    this.frequency = FREQUENCY.monthly,
     required this.dateAdded,
   });
 
@@ -19,7 +19,7 @@ class Income {
     return Income(
       id: map['id'] as int,
       userId: map['user_id'] as int,
-      amount: map['amount'] as int,
+      amount: map['amount'] as double,
       frequency: FrequencyExtension.fromString(map['frequency'] as String),
       dateAdded: DateTime.parse(map['date_added'] as String),
     );
@@ -30,7 +30,7 @@ class Income {
       'id': id,
       'user_id': userId,
       'amount': amount,
-      'frequency': frequency,
+      'frequency': frequency.name,
       'date_added': dateAdded.toIso8601String(),
     };
   }

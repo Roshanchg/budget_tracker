@@ -7,82 +7,128 @@ import 'package:serene/dbHandling.dart';
 import 'package:serene/helpers.dart';
 
 class SessionStorage {
+  static SessionStorage? _instance;
+
+  SessionStorage._internal();
+
+  static SessionStorage get instance {
+    _instance ??= SessionStorage._internal();
+    return _instance!;
+  }
+
   User? _user;
   Session? _session;
   Income? _income;
 
-  static final SessionStorage _instance = SessionStorage._internal();
-
-  factory SessionStorage() => _instance;
-  SessionStorage._internal();
-
-  set user(User user) {
-    _user = user;
-  }
-
-  set session(Session session) {
-    _session = session;
-  }
-
-  set income(Income? income) {
-    _income = income;
-  }
-
   User? get user => _user;
   Session? get session => _session;
   Income? get income => _income;
+
+  set user(User? user) => _user = user;
+  set session(Session? session) => _session = session;
+  set income(Income? income) => _income = income;
+
+  void clear() {
+    _user = null;
+    _session = null;
+    _income = null;
+  }
+
+  bool get hasActiveSession => _user != null && _session != null;
+
+  @override
+  String toString() => "User: $_user, Session: $_session, Income: $_income";
 }
 
 class SessionManagement {
+  static SessionStorage get _storage => SessionStorage.instance;
+
   static Future<void> createNewSession(User user) async {
+    if (user.id == null) {
+      return;
+    }
+
     Session newSession = Session(
       userId: user.id!,
       date: Helpers.getTodayDate(),
     );
+
     await DatabaseHelper().addSession(newSession);
-    SessionStorage()._session = newSession;
-    SessionStorage()._user = user;
-    SessionStorage()._income = await DatabaseHelper().getIncomeByUserId(
-      user.id!,
-    );
+
+    _storage.user = user;
+    _storage.session = newSession;
+    _storage.income = await DatabaseHelper().getIncomeByUserId(user.id!);
+
+    log("New session created for user: ${user.id}");
   }
 
   static bool isValidSession(Session session) {
-    return (session.date == Helpers.getTodayDate());
+    return session.date == Helpers.getTodayDate();
   }
 
   static void clearSessionStorage() {
-    SessionStorage()._income = null;
-    SessionStorage()._user = null;
-    SessionStorage()._session = null;
+    _storage.clear();
+    log("Session storage cleared");
   }
 
   static Future<void> endAllSessions() async {
     await DatabaseHelper().deleteAllSessions();
     clearSessionStorage();
+    log("All sessions ended");
   }
 
   static Future<bool> sessionExists() async {
-    Session? session = await DatabaseHelper().getSessionByDate(
-      Helpers.getTodayDate(),
-    );
-    if (session == null) {
-      clearSessionStorage();
-      return false;
-    } else {
-      log("session exists: ${session.userId}, ${session.date}, ${session.id}");
-      if (SessionStorage()._user != null && SessionStorage()._session != null) {
-        return true;
-      } else {
-        User? user = await DatabaseHelper().getUserById(session.userId);
+    try {
+      Session? session = await DatabaseHelper().getSessionByDate(
+        Helpers.getTodayDate(),
+      );
+
+      if (session == null) {
+        log("No session found for today");
         clearSessionStorage();
-        SessionStorage().user = user!;
-        SessionStorage().income = await DatabaseHelper().getIncomeByUserId(
-          user.id!,
-        );
-        SessionStorage().session = session;
+        return false;
+      }
+
+      log(
+        "Session exists: userId=${session.userId}, date=${session.date}, id=${session.id}",
+      );
+
+      if (_storage.hasActiveSession) {
         return true;
       }
+
+      User? user = await DatabaseHelper().getUserById(session.userId);
+      if (user == null) {
+        clearSessionStorage();
+        return false;
+      }
+
+      if (user.id != null) {
+        Income? income = await DatabaseHelper().getIncomeByUserId(user.id!);
+        _storage.user = user;
+        _storage.income = income;
+        _storage.session = session;
+        log("Session data loaded successfully");
+        return true;
+      } else {
+        clearSessionStorage();
+        return false;
+      }
+    } catch (e) {
+      log("Error in sessionExists: $e");
+      clearSessionStorage();
+      return false;
+    }
+  }
+
+  static bool isSessionValid() {
+    if (!_storage.hasActiveSession) return false;
+    return isValidSession(_storage.session!);
+  }
+
+  static Future<void> refreshSession() async {
+    if (_storage.session != null) {
+      await sessionExists();
     }
   }
 }

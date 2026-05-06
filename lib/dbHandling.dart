@@ -57,7 +57,7 @@ class DatabaseHelper {
       CREATE TABLE incomes (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
-        amount INTEGER NOT NULL,
+        amount REAL NOT NULL,
         frequency TEXT NOT NULL,
         date_added TEXT NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
@@ -72,7 +72,7 @@ class DatabaseHelper {
         income_id INTEGER NOT NULL,
         category TEXT NOT NULL,
         name TEXT NOT NULL,
-        amount INTEGER NOT NULL,
+        amount REAL NOT NULL,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (income_id) REFERENCES income (id) ON DELETE CASCADE
       )
@@ -84,7 +84,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
         income_id INTEGER NOT NULL,
-        amount INTEGER NOT NULL,
+        amount REAL NOT NULL,
         category TEXT NOT NULL,
         datetime TEXT NOT NULL,
         note TEXT,
@@ -288,6 +288,7 @@ class DatabaseHelper {
   // INCOMES
 
   Future<int> addIncome(Income income) async {
+    log("DB: $income");
     try {
       final db = await database;
       return await db.insert('incomes', income.toMap());
@@ -342,6 +343,25 @@ class DatabaseHelper {
     } catch (e) {
       log(e.toString());
       return null;
+    }
+  }
+
+  Future<List<Income>> getFiveIncomesByUserId(int userId) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'incomes',
+        where: 'user_id = ? ',
+        whereArgs: [userId],
+        orderBy: 'date_added DESC',
+      );
+      if (maps.isNotEmpty) {
+        return maps.map((e) => Income.fromMap(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      log(e.toString());
+      return [];
     }
   }
 
@@ -442,6 +462,21 @@ class DatabaseHelper {
     }
   }
 
+  Future<double> getTotalBudgetAmountById(int incomeId) async {
+    try {
+      final db = await database;
+      final result = await db.rawQuery(
+        'SELECT SUM(amount) as total FROM budgets WHERE income_id = $incomeId',
+      );
+      if (result.first['total'] == null) return 0.0;
+      double total = result.first['total'] as double;
+      return total;
+    } catch (e) {
+      log(e.toString());
+      return 0.0;
+    }
+  }
+
   Future<int> updateBudget(Budgets budget) async {
     try {
       final db = await database;
@@ -499,6 +534,23 @@ class DatabaseHelper {
     } catch (e) {
       log(e.toString());
       return [];
+    }
+  }
+
+  Future<double> getTotalExpenseAmount(int incomeId) async {
+    try {
+      final db = await database;
+      final result = await db.rawQuery(
+        'SELECT SUM(amount) as total FROM expenses where income_id = $incomeId',
+      );
+      if (result.first['total'] == null) {
+        return 0.0;
+      }
+      double total = result.first['total'] as double;
+      return total;
+    } catch (e) {
+      log(e.toString());
+      return 0.0;
     }
   }
 
@@ -581,6 +633,7 @@ class DatabaseHelper {
       final db = await database;
       db.close();
       await deleteDatabase(db.path);
+      _database = null;
     } catch (e) {
       log("IDK MAN");
     }

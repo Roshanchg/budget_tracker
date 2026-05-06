@@ -1,7 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
 import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/classes/Income.dart';
+import 'package:serene/dbHandling.dart';
+import 'package:serene/sessionManagement.dart';
 
 class AddIncomePage extends StatefulWidget {
   const AddIncomePage({super.key});
@@ -13,16 +17,80 @@ class AddIncomePage extends StatefulWidget {
 class _AddIncomePageState extends State<AddIncomePage> {
   DateTime? _pickedDate;
   TextEditingController _incomeInputController = TextEditingController();
-
+  double? _enteredIncomeAmount;
+  bool _isValidInputs = false;
   Future<void> _pickDate(BuildContext context) async {
     DateTime? _pd = await showDatePicker(
       context: context,
       firstDate: DateTime(2025),
       lastDate: DateTime.now().add(Duration(days: 365)),
     );
+
     setState(() {
       _pickedDate = _pd;
     });
+    _validateIncomeField();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  bool _validateIncomeField() {
+    try {
+      List<String> parts = _incomeInputController.text.split(".");
+      if (parts.length > 2) {
+        return false;
+      }
+      if (parts.isEmpty) {
+        return false;
+      }
+      double value = double.parse(_incomeInputController.text);
+      _enteredIncomeAmount = value;
+
+      return true;
+    } catch (e) {
+      _incomeInputController.text = "";
+      _enteredIncomeAmount = null;
+      return false;
+    }
+  }
+
+  void _validateInputValues() {
+    if (_pickedDate != null && _validateIncomeField()) {
+      setState(() {
+        _isValidInputs = true;
+      });
+    } else {
+      setState(() {
+        _isValidInputs = false;
+      });
+    }
+  }
+
+  Future<void> _onSubmit() async {
+    if (_enteredIncomeAmount == null) return;
+    _validateInputValues();
+    if (!_isValidInputs) {
+      _showError(context, "Invalid Input Fields");
+      return;
+    }
+    Income newIncome = Income(
+      userId: SessionStorage.instance.user!.id!,
+      amount: _enteredIncomeAmount!,
+      dateAdded: _pickedDate!,
+    );
+    DatabaseHelper().addIncome(newIncome);
+    SessionStorage.instance.income = await DatabaseHelper().getIncomeByUserId(
+      SessionStorage.instance.user!.id!,
+    );
   }
 
   @override
@@ -31,7 +99,9 @@ class _AddIncomePageState extends State<AddIncomePage> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            if (mounted) {
+              Navigator.pop(context, true);
+            }
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -86,7 +156,11 @@ class _AddIncomePageState extends State<AddIncomePage> {
                         width: 120,
                         height: 40,
                         child: TextField(
-                          controller: TextEditingController(),
+                          autofocus: true,
+                          keyboardType: TextInputType.number,
+                          controller: _incomeInputController,
+                          onEditingComplete: () => _validateInputValues(),
+                          onChanged: (value) {},
                           decoration: InputDecoration(
                             focusColor: Colors.transparent,
                             border: UnderlineInputBorder(),
@@ -211,7 +285,10 @@ class _AddIncomePageState extends State<AddIncomePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: PURPLEFOREGROUND,
                     ),
-                    onPressed: () {},
+                    onPressed: () async {
+                      _onSubmit();
+                      Navigator.pop(context, true);
+                    },
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -228,6 +305,7 @@ class _AddIncomePageState extends State<AddIncomePage> {
               ),
             ),
             const SizedBox(height: 24),
+
             Container(
               width: context.widthPercentage(80),
               decoration: BoxDecoration(
@@ -236,7 +314,9 @@ class _AddIncomePageState extends State<AddIncomePage> {
               ),
               child: TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  if (mounted) {
+                    Navigator.pop(context, false);
+                  }
                 },
                 child: const Text("Cancel and Discard"),
               ),

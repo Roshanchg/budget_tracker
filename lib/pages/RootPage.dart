@@ -23,6 +23,8 @@ class RootPage extends StatefulWidget {
 }
 
 class _RootPageState extends State<RootPage> {
+  bool _isLoading = true;
+
   final List<Widget> pages = [
     HomePage(),
     ExpensePage(),
@@ -38,22 +40,18 @@ class _RootPageState extends State<RootPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkForLogin();
-    });
+    _checkForLogin();
   }
 
   Future<void> _checkForLogin() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Center(child: CircularProgressIndicator()),
-    );
+    setState(() {
+      _isLoading = true;
+    });
     if (!await SessionManagement.sessionExists()) {
       User? user = await DatabaseHelper().getUserById(0);
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      setState(() {
+        _isLoading = false;
+      });
       if (user == null) {
         log("User doesnot exist");
         if (mounted) {
@@ -72,46 +70,51 @@ class _RootPageState extends State<RootPage> {
         }
       }
     } else {
-      if (mounted) {
-        Navigator.pop(context);
-      }
-      log("${SessionStorage().user}, ${SessionStorage().session}");
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: getAppBar(),
-      bottomNavigationBar: getBottomNavBar(
-        _currentActiveIndex = _currentActiveIndex,
-        (index) => setState(() {
-          _currentActiveIndex = index;
-        }),
-      ),
-
-      body: pages[_currentActiveIndex],
-      floatingActionButton: (_currentActiveIndex == 3)
-          ? null
-          : IconButton(
-              style: IconButton.styleFrom(
-                backgroundColor: PRIMARYCOLOR,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () => {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => subPages[_currentActiveIndex],
-                  ),
-                ),
-              },
-              icon: Icon(Icons.add),
+    return (_isLoading)
+        ? Scaffold(body: Center(child: CircularProgressIndicator()))
+        : Scaffold(
+            appBar: getAppBar(),
+            bottomNavigationBar: getBottomNavBar(
+              _currentActiveIndex = _currentActiveIndex,
+              (index) => setState(() {
+                _currentActiveIndex = index;
+              }),
             ),
-    );
+
+            body: pages[_currentActiveIndex],
+            floatingActionButton: (_currentActiveIndex == 3)
+                ? null
+                : IconButton(
+                    style: IconButton.styleFrom(
+                      backgroundColor: PRIMARYCOLOR,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    onPressed: () async {
+                      final bool? shouldRefresh = await (Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => subPages[_currentActiveIndex],
+                        ),
+                      ));
+                      if (shouldRefresh == null || shouldRefresh) {
+                        await _checkForLogin();
+                        setState(() {});
+                      }
+                    },
+                    icon: Icon(Icons.add),
+                  ),
+          );
   }
 
   AppBar getAppBar() {

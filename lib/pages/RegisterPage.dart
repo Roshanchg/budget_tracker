@@ -137,7 +137,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: TextButton(
                 onPressed: () async {
                   try {
-                    await Authenticator.register(int.parse(_pin));
+                    await   Authenticator.register(int.parse(_pin));
                     if (await SessionManagement.sessionExists()) {
                       Navigator.pushReplacement(
                         context,

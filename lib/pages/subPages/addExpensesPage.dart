@@ -48,7 +48,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context,true);
           },
           icon: Icon(Icons.arrow_back),
         ),
@@ -298,7 +298,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context,true);
               },
               child: const Text("Discard and Return"),
             ),

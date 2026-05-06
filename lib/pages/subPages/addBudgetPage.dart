@@ -1,6 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/classes/Budgets.dart';
+import 'package:serene/dbHandling.dart';
+import 'package:serene/sessionManagement.dart';
 
 class AddBudgetPage extends StatefulWidget {
   const AddBudgetPage({super.key});
@@ -10,10 +14,82 @@ class AddBudgetPage extends StatefulWidget {
 
 class _AddBudgetPageState extends State<AddBudgetPage> {
   CATEGORY selectedCategory = CATEGORY.FOOD;
+  double? _budgetAmount;
+  String? _nameValue;
+  TextEditingController _nameInputController = TextEditingController();
+  TextEditingController _budgetAmountInputController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
-    selectedCategory = CATEGORY.FOOD;
+  }
+
+  Future<bool> _budgetIsAvailable() async {
+    double totalBudget = await DatabaseHelper().getTotalBudgetAmountById(
+      SessionStorage.instance.income!.id!,
+    );
+    double avialableBudget =
+        SessionStorage.instance.income!.amount - totalBudget;
+    if (_budgetAmount != null) {
+      if (avialableBudget < _budgetAmount!) {
+        _showError(
+          context,
+          "Budget Amount exceeds available money for allocation.",
+        );
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  Future<bool> _isValidInputs() async {
+    try {
+      double val = double.parse(_budgetAmountInputController.text);
+      setState(() {
+        _budgetAmount = val;
+      });
+    } catch (e) {
+      _showError(context, "Invalid Budget amount.");
+      return false;
+    }
+    setState(() {
+      _nameValue = _nameInputController.text;
+    });
+    if (!await _budgetIsAvailable()) {
+      return false;
+    }
+    return true;
+  }
+
+  String _getname() {
+    if (_nameValue == null) {
+      return selectedCategory.asDbString;
+    } else if (_nameValue!.isEmpty) {
+      return selectedCategory.asDbString;
+    } else {
+      return _nameValue!;
+    }
+  }
+
+  Future<void> _submitForm() async {
+    Budgets budgets = Budgets(
+      userId: SessionStorage.instance.user!.id!,
+      incomeId: SessionStorage.instance.income!.id!,
+      category: selectedCategory,
+      amount: _budgetAmount!,
+      name: _getname(),
+    );
+
+    await DatabaseHelper().addBudget(budgets);
+  }
+
+  void _showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -22,7 +98,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pop(context, true);
           },
           icon: Icon(Icons.arrow_back),
         ),
@@ -60,6 +136,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                     ),
                     color: null,
                     child: TextField(
+                      controller: _nameInputController,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "e.g. Rent Payment",
@@ -116,6 +193,9 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                     ),
                     color: null,
                     child: TextField(
+                      controller: _budgetAmountInputController,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
                       decoration: InputDecoration(
                         prefixText: "Rs. ",
                         border: InputBorder.none,
@@ -146,7 +226,13 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                     ),
                     width: context.widthPercentage(75),
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        if (await _isValidInputs()) {
+                          _submitForm();
+
+                          Navigator.pop(context, true);
+                        }
+                      },
                       child: const Text(
                         "Create Budget",
                         style: TextStyle(color: Colors.white),
@@ -155,7 +241,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(context, true);
                     },
                     child: const Text("Discard & Return"),
                   ),

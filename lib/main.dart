@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:serene/dbHandling.dart';
 import 'package:serene/pages/RootPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  // await DatabaseHelper().removeDB();
   runApp(const MyApp());
 }
 

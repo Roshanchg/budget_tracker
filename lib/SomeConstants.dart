@@ -18,7 +18,7 @@ const Color YELLOWBACKGROUND = Color(0x7CFFDF93);
 const Color PURPLEFOREGROUND = PRIMARYCOLOR;
 const Color PURPLEBACKGROUND = Color(0xffE1D4FD);
 
-const Color PINKFOREGROUND = Color(0xffBE185D);
+const Color PINKFOREGROUND = Color.fromARGB(255, 144, 32, 79);
 const Color PINKBACKGROUND = Color(0xffFCE7F3);
 
 const Color BLUEFOREGROUND = Color(0xff1E40AF);
