@@ -537,20 +537,20 @@ class DatabaseHelper {
     }
   }
 
-  Future<double> getTotalExpenseAmount(int incomeId) async {
+  Future<double?> getTotalExpenseAmount(int incomeId) async {
     try {
       final db = await database;
       final result = await db.rawQuery(
         'SELECT SUM(amount) as total FROM expenses where income_id = $incomeId',
       );
       if (result.first['total'] == null) {
-        return 0.0;
+        return null;
       }
       double total = result.first['total'] as double;
       return total;
     } catch (e) {
       log(e.toString());
-      return 0.0;
+      return null;
     }
   }
 

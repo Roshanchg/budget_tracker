@@ -1,16 +1,16 @@
 import 'package:serene/Enums/category.dart';
 
 class Expense {
-  final int id;
+  final int? id;
   final int userId;
   final int incomeId;
   final CATEGORY category;
   final String note;
-  final int amount;
+  final double amount;
   final DateTime dateTime;
 
   const Expense({
-    required this.id,
+    this.id,
     required this.userId,
     required this.incomeId,
     required this.category,
@@ -25,7 +25,7 @@ class Expense {
       userId: map['user_id'] as int,
       incomeId: map['income_id'] as int,
       category: CategoryExtension.fromString(map['categoru'] as String),
-      amount: map['amount'] as int,
+      amount: map['amount'] as double,
       note: map['note'] as String,
       dateTime: DateTime.parse(map['datetime'] as String),
     );

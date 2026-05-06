@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/classes/Expense.dart';
+import 'package:serene/classes/Income.dart';
+import 'package:serene/dbHandling.dart';
+import 'package:serene/pages/RootPage.dart';
+import 'package:serene/sessionManagement.dart';
 
 class ExpensePage extends StatefulWidget {
   const ExpensePage({super.key});
@@ -11,228 +16,303 @@ class ExpensePage extends StatefulWidget {
 class _ExpensePageState extends State<ExpensePage> {
   int _activeFilterIndex = 0;
 
+  bool _isLoading = true;
+
+  bool _expenseExists = false;
+
+  Map<DateTime, List<Expense>> _expensesMap = {};
+
   @override
   void initState() {
     super.initState();
+    _loadExpensesToMap();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigateToIncomePage();
+    });
+  }
+
+  void _navigateToIncomePage() {
+    if (SessionStorage.instance.income == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => RootPage()),
+      );
+    }
+  }
+
+  Future<void> _loadExpensesToMap() async {
+    setState(() {
+      _isLoading = true;
+    });
+    Income? _income = SessionStorage.instance.income;
+    if (_income == null) {
+      setState(() {
+        _isLoading = false;
+        _expenseExists = true;
+      });
+
+      return;
+    } else {
+      List<Expense> expenses = await DatabaseHelper().getExpensesByIncomeId(
+        _income.id!,
+      );
+      for (var expense in expenses) {
+        if (_expensesMap.containsKey(expense.dateTime)) {
+          _expensesMap[expense.dateTime]!.add(expense);
+        } else {
+          _expensesMap[expense.dateTime] = [expense];
+        }
+      }
+      if (_expensesMap.isNotEmpty) {
+        setState(() {
+          _isLoading = false;
+          _expenseExists = true;
+          return;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+
+          _expenseExists = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: EdgeInsets.all(20),
-      children: [
-        Container(
-          color: null,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: EdgeInsets.all(20),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return (_isLoading)
+        ? Center(child: CircularProgressIndicator())
+        : (!_expenseExists)
+        ? Center(
+            child: Text(
+              "No Expenses Added.\n Add some using the floating button.",
+              textAlign: TextAlign.center,
+            ),
+          )
+        : ListView(
+            padding: EdgeInsets.all(20),
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("Total Spent this month"),
-                  Text(
-                    "Rs. 5400.80",
-                    style: TextStyle(
-                      fontWeight: FontWeight(600),
-                      fontSize: 28,
-                      color: PURPLEFOREGROUND,
-                    ),
-                  ),
-                ],
-              ),
               Container(
                 color: null,
                 decoration: BoxDecoration(
-                  color: Colors.red[50],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: EdgeInsetsGeometry.directional(
-                  start: 10,
-                  end: 10,
-                  top: 4,
-                  bottom: 4,
-                ),
-                child: Text(
-                  "+ 12%",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight(700),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          height: 60,
-          alignment: Alignment.topLeft,
-
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: CATEGORY.values.length + 1,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Row(
+                padding: EdgeInsets.all(20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _activeFilterIndex = index;
-                        });
-                      },
-                      style: TextButton.styleFrom(
-                        backgroundColor: (_activeFilterIndex == index)
-                            ? PURPLEFOREGROUND
-                            : Color(0xFFECE6EE),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Total Spent this month"),
+                        Text(
+                          "Rs. 5400.80",
+                          style: TextStyle(
+                            fontWeight: FontWeight(600),
+                            fontSize: 28,
+                            color: PURPLEFOREGROUND,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      color: null,
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsetsGeometry.directional(
+                        start: 10,
+                        end: 10,
+                        top: 4,
+                        bottom: 4,
                       ),
                       child: Text(
-                        "All",
+                        "+ 12%",
                         style: TextStyle(
-                          color: (_activeFilterIndex == index)
-                              ? Colors.white
-                              : Colors.black,
-                          fontWeight: FontWeight(400),
+                          color: Colors.red,
+                          fontWeight: FontWeight(700),
                         ),
                       ),
                     ),
-                    SizedBox(width: 10),
                   ],
-                );
-              }
-              return Row(
+                ),
+              ),
+              Container(
+                height: 60,
+                alignment: Alignment.topLeft,
+
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: CATEGORY.values.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return Row(
+                        children: [
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _activeFilterIndex = index;
+                              });
+                            },
+                            style: TextButton.styleFrom(
+                              backgroundColor: (_activeFilterIndex == index)
+                                  ? PURPLEFOREGROUND
+                                  : Color(0xFFECE6EE),
+                            ),
+                            child: Text(
+                              "All",
+                              style: TextStyle(
+                                color: (_activeFilterIndex == index)
+                                    ? Colors.white
+                                    : Colors.black,
+                                fontWeight: FontWeight(400),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _activeFilterIndex = index;
+                            });
+                          },
+                          style: TextButton.styleFrom(
+                            backgroundColor: (_activeFilterIndex == index)
+                                ? PURPLEFOREGROUND
+                                : Color(0xFFECE6EE),
+                          ),
+                          child: Text(
+                            CATEGORY.values[index - 1].displayName,
+                            style: TextStyle(
+                              color: (_activeFilterIndex == index)
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontWeight: FontWeight(400),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 10),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              Column(
                 children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _activeFilterIndex = index;
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: (_activeFilterIndex == index)
-                          ? PURPLEFOREGROUND
-                          : Color(0xFFECE6EE),
-                    ),
-                    child: Text(
-                      CATEGORY.values[index - 1].displayName,
-                      style: TextStyle(
-                        color: (_activeFilterIndex == index)
-                            ? Colors.white
-                            : Colors.black,
-                        fontWeight: FontWeight(400),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                ],
-              );
-            },
-          ),
-        ),
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Recent Expenses",
-                  style: TextStyle(fontWeight: FontWeight(500), fontSize: 20),
-                ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text("View Analysis"),
-                ),
-              ],
-            ),
-            SizedBox(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: 2,
-                itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Today Apr 27"),
-                      SizedBox(height: 8),
-                      SizedBox(
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          physics: NeverScrollableScrollPhysics(),
-                          itemCount: (index == 0) ? 2 : 3,
-                          itemBuilder: (context, index) {
-                            return Column(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: EdgeInsetsGeometry.all(16),
-                                  child: Row(
+                      const Text(
+                        "Recent Expenses",
+                        style: TextStyle(
+                          fontWeight: FontWeight(500),
+                          fontSize: 20,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text("View Analysis"),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: 2,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("Today Apr 27"),
+                            SizedBox(height: 8),
+                            SizedBox(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: NeverScrollableScrollPhysics(),
+                                itemCount: (index == 0) ? 2 : 3,
+                                itemBuilder: (context, index) {
+                                  return Column(
                                     children: [
                                       Container(
-                                        padding: EdgeInsetsGeometry.all(10),
                                         decoration: BoxDecoration(
+                                          color: Colors.white,
                                           borderRadius: BorderRadius.circular(
-                                            50,
+                                            10,
                                           ),
-                                          color: GREENBACKGROUND,
                                         ),
-                                        child: Icon(
-                                          Icons.restaurant,
-                                          color: GREENFOREGROUND,
-                                        ),
-                                      ),
-                                      SizedBox(width: 20),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                        padding: EdgeInsetsGeometry.all(16),
+                                        child: Row(
                                           children: [
-                                            Text(
-                                              "Whole Food",
-                                              style: TextStyle(
-                                                fontWeight: FontWeight(600),
+                                            Container(
+                                              padding: EdgeInsetsGeometry.all(
+                                                10,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(50),
+                                                color: GREENBACKGROUND,
+                                              ),
+                                              child: Icon(
+                                                Icons.restaurant,
+                                                color: GREENFOREGROUND,
+                                              ),
+                                            ),
+                                            SizedBox(width: 20),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "Whole Food",
+                                                    style: TextStyle(
+                                                      fontWeight: FontWeight(
+                                                        600,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "Food and Grocerries",
+                                                    style: TextStyle(
+                                                      color: Color(0x80000000),
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                             Text(
-                                              "Food and Grocerries",
+                                              "-Rs.1000",
                                               style: TextStyle(
-                                                color: Color(0x80000000),
-                                                fontSize: 12,
+                                                fontWeight: FontWeight(600),
                                               ),
                                             ),
                                           ],
                                         ),
                                       ),
-                                      Text(
-                                        "-Rs.1000",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight(600),
-                                        ),
-                                      ),
+                                      SizedBox(height: 16),
                                     ],
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ],
-    );
+            ],
+          );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
@@ -156,7 +158,7 @@ class _BudgetingPageState extends State<BudgetingPage> {
                               style: TextStyle(fontWeight: FontWeight(400)),
                             ),
                             Text(
-                              "${_totalBudget.toString()}",
+                              "Rs.${_totalBudget.toString()}",
                               style: TextStyle(
                                 fontWeight: FontWeight(700),
                                 fontSize: 20,
@@ -244,9 +246,46 @@ class _BudgetingPageState extends State<BudgetingPage> {
                                     size: 30,
                                   ),
                                 ),
-                                IconButton(
-                                  onPressed: () {},
+                                PopupMenuButton(
+                                  onSelected: (value) {
+                                    switch (value) {
+                                      case "edit":
+                                        log(value);
+                                        break;
+
+                                      case "delete":
+                                        log(value);
+
+                                        break;
+                                      default:
+                                        return;
+                                    }
+                                  },
                                   icon: Icon(Icons.more_vert),
+                                  itemBuilder: (BuildContext context) {
+                                    return <PopupMenuEntry<String>>[
+                                      const PopupMenuItem(
+                                        value: "edit",
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.edit),
+                                            SizedBox(width: 8),
+                                            Text("Edit"),
+                                          ],
+                                        ),
+                                      ),
+                                      const PopupMenuItem(
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.delete),
+                                            SizedBox(width: 8),
+                                            Text("Delete"),
+                                          ],
+                                        ),
+                                      ),
+                                    ];
+                                  },
                                 ),
                               ],
                             ),
