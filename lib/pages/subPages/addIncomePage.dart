@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
 import 'package:serene/Enums/month.dart';
@@ -76,8 +75,8 @@ class _AddIncomePageState extends State<AddIncomePage> {
   }
 
   Future<void> _onSubmit() async {
-    if (_enteredIncomeAmount == null) return;
     _validateInputValues();
+    if (_enteredIncomeAmount == null) return;
     if (!_isValidInputs) {
       _showError(context, "Invalid Input Fields");
       return;

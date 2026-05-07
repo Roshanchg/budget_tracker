@@ -6,6 +6,7 @@ import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Expense.dart';
 import 'package:serene/dbHandling.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/sessionManagement.dart';
 
 class AddExpensePage extends StatefulWidget {
@@ -53,6 +54,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
         _pickedTime!.minute,
       ),
     );
+    DatabaseHelper().addExpense(newExpense);
     log("Expense: $newExpense");
   }
 
@@ -376,7 +378,14 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        if (_isValidInputOptions()) {
+                          _onSubmit();
+                          Navigator.pop(context, true);
+                        } else {
+                          Helpers.showSnackbar(context, "Invalid Form Values");
+                        }
+                      },
                       child: const Text(
                         "Save Expense",
                         style: TextStyle(color: Colors.white),

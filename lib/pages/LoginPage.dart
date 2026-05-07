@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:serene/Authenticator.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/pages/RegisterPage.dart';
 import 'package:serene/pages/RootPage.dart';
 import 'package:serene/sessionManagement.dart';
@@ -198,17 +199,19 @@ class _LoginPageState extends State<LoginPage> {
               ),
               height: 54,
               child: TextButton(
-                onPressed: () async{
+                onPressed: () async {
                   try {
-                    Authenticator.login(int.parse(_pin));
-                    if (await SessionManagement.sessionExists()) {
+                    if (await Authenticator.login(int.parse(_pin))) {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (context) => RootPage()),
                       );
+                    } else {
+                      Helpers.showSnackbar(context, "Invalid PIN");
                     }
                   } catch (e) {
                     log("Parsing error login page: $e");
+                    Helpers.showSnackbar(context, "Invalid PIN");
                   }
                 },
 

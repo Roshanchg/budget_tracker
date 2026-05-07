@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
+import 'package:serene/Exporter.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/User.dart';
 import 'package:serene/dbHandling.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/pages/LoginPage.dart';
 import 'package:serene/pages/RegisterPage.dart';
 import 'package:serene/sessionManagement.dart';
@@ -383,7 +385,16 @@ class _SettingsPageState extends State<SettingsPage> {
                       width: context.widthPercentage(100),
                       height: 40,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () async {
+                          if (await CSVExporter.exportAll()) {
+                            Helpers.showSnackbar(
+                              context,
+                              "Export Successfull!",
+                            );
+                          } else {
+                            Helpers.showSnackbar(context, "Export Failed !!!");
+                          }
+                        },
                         child: const Text(
                           "Export All Data",
                           style: TextStyle(color: Colors.white),
@@ -403,6 +414,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 child: TextButton(
                   onPressed: () {
+                    SessionManagement.endAllSessions();
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => LoginPage()),

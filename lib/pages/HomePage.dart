@@ -1,3 +1,4 @@
+import 'dart:developer';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +40,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _showOldIncomeDialogueBox() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          child: Container(
+            padding: EdgeInsets.all(20),
+            height: 100,
+            child: Column(
+              children: [Text("Old Income Exists from month. APRIL")],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _dataStates() async {
     if (SessionStorage.instance.income == null) {
       setState(() {
@@ -48,7 +66,9 @@ class _HomePageState extends State<HomePage> {
       _totalExpenses = await DatabaseHelper().getTotalExpenseAmount(
         SessionStorage.instance.income!.id!,
       );
+
       setState(() {
+        _totalExpenses ??= 0;
         _hasIncome = true;
         _incomeValue = SessionStorage.instance.income!.amount;
       });
@@ -62,10 +82,16 @@ class _HomePageState extends State<HomePage> {
 
         _monthsNum = _recentIncomes
             .map((item) => item.dateAdded.month)
+            .toList()
+            .reversed
             .toList();
-        _spots = List.generate(_monthIncome.length, (index) {
-          return FlSpot(index.toDouble(), _monthIncome[index]);
-        }).reversed.toList();
+
+        for (var i = 1; i <= _monthIncome.length; i++) {
+          _spots.add(
+            FlSpot(i - 1.toDouble(), _monthIncome[_monthIncome.length - i]),
+          );
+        }
+        log(_spots.toString());
       });
       if (_totalExpenses != null) {
         setState(() {
@@ -199,6 +225,7 @@ class _HomePageState extends State<HomePage> {
                                   leftTitles: AxisTitles(
                                     sideTitles: SideTitles(
                                       showTitles: true,
+
                                       getTitlesWidget: (value, meta) {
                                         return Text(
                                           '${(value / 1000).toInt()}k',

@@ -5,16 +5,17 @@ import 'package:serene/dbHandling.dart';
 import 'package:serene/sessionManagement.dart';
 
 class Authenticator {
-  static Future<void> login(int pin) async {
+  static Future<bool> login(int pin) async {
     User? user = await DatabaseHelper().getUserById(0);
     if (await SessionManagement.sessionExists()) {
       SessionManagement.endAllSessions();
     }
     if (user == null || user.pin != pin) {
       log("Invalid User PIN");
-      return;
+      return false;
     } else {
-      SessionManagement.createNewSession(user);
+      await SessionManagement.createNewSession(user);
+      return true;
     }
   }
 

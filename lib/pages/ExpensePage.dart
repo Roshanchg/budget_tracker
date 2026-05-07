@@ -4,6 +4,7 @@ import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Expense.dart';
 import 'package:serene/classes/Income.dart';
 import 'package:serene/dbHandling.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/pages/RootPage.dart';
 import 'package:serene/sessionManagement.dart';
 
@@ -21,6 +22,8 @@ class _ExpensePageState extends State<ExpensePage> {
   bool _expenseExists = false;
 
   Map<DateTime, List<Expense>> _expensesMap = {};
+
+  double? _totalExpenses;
 
   @override
   void initState() {
@@ -54,6 +57,9 @@ class _ExpensePageState extends State<ExpensePage> {
       return;
     } else {
       List<Expense> expenses = await DatabaseHelper().getExpensesByIncomeId(
+        _income.id!,
+      );
+      _totalExpenses = await DatabaseHelper().getTotalExpenseAmount(
         _income.id!,
       );
       for (var expense in expenses) {
@@ -108,7 +114,7 @@ class _ExpensePageState extends State<ExpensePage> {
                       children: [
                         const Text("Total Spent this month"),
                         Text(
-                          "Rs. 5400.80",
+                          "Rs.${_totalExpenses.toString()}",
                           style: TextStyle(
                             fontWeight: FontWeight(600),
                             fontSize: 28,
@@ -120,7 +126,7 @@ class _ExpensePageState extends State<ExpensePage> {
                     Container(
                       color: null,
                       decoration: BoxDecoration(
-                        color: Colors.red[50],
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: EdgeInsetsGeometry.directional(
@@ -130,7 +136,7 @@ class _ExpensePageState extends State<ExpensePage> {
                         bottom: 4,
                       ),
                       child: Text(
-                        "+ 12%",
+                        "",
                         style: TextStyle(
                           color: Colors.red,
                           fontWeight: FontWeight(700),
@@ -227,19 +233,23 @@ class _ExpensePageState extends State<ExpensePage> {
                     child: ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: 2,
+                      itemCount: _expensesMap.keys.length,
                       itemBuilder: (context, index) {
+                        DateTime dt = _expensesMap.keys.elementAt(index);
+                        List<Expense>? expenses = _expensesMap[dt] ?? [];
+
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Today Apr 27"),
+                            Text("${Helpers.prettyDateForExpenses(dt)}"),
                             SizedBox(height: 8),
                             SizedBox(
                               child: ListView.builder(
                                 shrinkWrap: true,
                                 physics: NeverScrollableScrollPhysics(),
-                                itemCount: (index == 0) ? 2 : 3,
+                                itemCount: expenses.length,
                                 itemBuilder: (context, index) {
+                                  Expense ex = expenses[index];
                                   return Column(
                                     children: [
                                       Container(
@@ -273,7 +283,7 @@ class _ExpensePageState extends State<ExpensePage> {
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                    "Whole Food",
+                                                    "${ex.note}",
                                                     style: TextStyle(
                                                       fontWeight: FontWeight(
                                                         600,
@@ -281,7 +291,7 @@ class _ExpensePageState extends State<ExpensePage> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    "Food and Grocerries",
+                                                    "${ex.category.displayName}",
                                                     style: TextStyle(
                                                       color: Color(0x80000000),
                                                       fontSize: 12,
@@ -291,7 +301,7 @@ class _ExpensePageState extends State<ExpensePage> {
                                               ),
                                             ),
                                             Text(
-                                              "-Rs.1000",
+                                              "-Rs.${ex.amount.toString()}",
                                               style: TextStyle(
                                                 fontWeight: FontWeight(600),
                                               ),

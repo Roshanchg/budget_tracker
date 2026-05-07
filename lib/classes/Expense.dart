@@ -24,7 +24,7 @@ class Expense {
       id: map['id'] as int,
       userId: map['user_id'] as int,
       incomeId: map['income_id'] as int,
-      category: CategoryExtension.fromString(map['categoru'] as String),
+      category: CategoryExtension.fromString(map['category'] as String),
       amount: map['amount'] as double,
       note: map['note'] as String,
       dateTime: DateTime.parse(map['datetime'] as String),
