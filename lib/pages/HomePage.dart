@@ -4,9 +4,11 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/currency.dart';
 import 'package:serene/Enums/month.dart';
+import 'package:serene/Exporter.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Income.dart';
 import 'package:serene/dbHandling.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/pages/subPages/addBudgetPage.dart';
 import 'package:serene/pages/subPages/addExpensesPage.dart';
 import 'package:serene/sessionManagement.dart';
@@ -39,23 +41,6 @@ class _HomePageState extends State<HomePage> {
       });
       await _dataStates();
     });
-  }
-
-  void _showOldIncomeDialogueBox() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          child: Container(
-            padding: EdgeInsets.all(20),
-            height: 100,
-            child: Column(
-              children: [Text("Old Income Exists from month. APRIL")],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   Future<void> _dataStates() async {
@@ -571,7 +556,17 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           IconButton(
-                            onPressed: () => {},
+                            onPressed: () async => {
+                              if (!await CSVExporter.exportAll())
+                                {Helpers.showSnackbar(context, "Export Failed")}
+                              else
+                                {
+                                  Helpers.showSnackbar(
+                                    context,
+                                    "Exported Successfully. Files are at your application storage.\n(Android/data/com.example.serene/files)",
+                                  ),
+                                },
+                            },
                             icon: Icon(Icons.arrow_forward_ios, size: 16),
                           ),
                         ],

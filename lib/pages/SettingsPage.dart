@@ -9,6 +9,7 @@ import 'package:serene/dbHandling.dart';
 import 'package:serene/helpers.dart';
 import 'package:serene/pages/LoginPage.dart';
 import 'package:serene/pages/RegisterPage.dart';
+import 'package:serene/pages/RootPage.dart';
 import 'package:serene/sessionManagement.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -340,11 +341,11 @@ class _SettingsPageState extends State<SettingsPage> {
                         onPressed: () async {
                           await DatabaseHelper().removeDB();
                           if (mounted) {
-                            Navigator.pushReplacement(
-                              context,
+                            Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
                                 builder: (context) => RegisterPage(),
                               ),
+                              (Route<dynamic> route) => false,
                             );
                           }
                         },
@@ -403,7 +404,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           if (await CSVExporter.exportAll()) {
                             Helpers.showSnackbar(
                               context,
-                              "Export Successfull!",
+                              "Exported Successfully. Files are at your application storage.\n(Android/data/com.example.serene/files)",
                             );
                           } else {
                             Helpers.showSnackbar(context, "Export Failed !!!");
@@ -427,12 +428,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TextButton(
-                  onPressed: () {
-                    SessionManagement.endAllSessions();
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginPage()),
-                    );
+                  onPressed: () async {
+                    await SessionManagement.endAllSessions();
+                    if (mounted) {
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                        (Route<dynamic> route) => false,
+                      );
+                    }
                   },
                   child: const Text(
                     "Log Out",

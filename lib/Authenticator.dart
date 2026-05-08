@@ -5,6 +5,18 @@ import 'package:serene/dbHandling.dart';
 import 'package:serene/sessionManagement.dart';
 
 class Authenticator {
+  static Future<bool> biometricLogin() async {
+    User? user = await DatabaseHelper().getUserById(0);
+    if (await SessionManagement.sessionExists()) {
+      SessionManagement.endAllSessions();
+    }
+    if (user == null) {
+      return false;
+    }
+    await SessionManagement.createNewSession(user);
+    return true;
+  }
+
   static Future<bool> login(int pin) async {
     User? user = await DatabaseHelper().getUserById(0);
     if (await SessionManagement.sessionExists()) {

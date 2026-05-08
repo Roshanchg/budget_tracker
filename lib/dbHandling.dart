@@ -135,6 +135,14 @@ class DatabaseHelper {
     }
   }
 
+  Future<bool> isBiometricEnabled() async {
+    User? user = await getUserById(0);
+    if (user != null) {
+      return user.biometric;
+    }
+    return false;
+  }
+
   Future<int> updateUser(User user) async {
     try {
       final db = await database;

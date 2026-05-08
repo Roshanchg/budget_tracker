@@ -1,8 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:serene/Authenticator.dart';
 import 'package:serene/SomeConstants.dart';
+import 'package:serene/dbHandling.dart';
 import 'package:serene/helpers.dart';
 import 'package:serene/pages/RegisterPage.dart';
 import 'package:serene/pages/RootPage.dart';
@@ -15,16 +17,64 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final LocalAuthentication auth = LocalAuthentication();
+  bool _canCheckBiometrics = false;
   bool _isPinMode = true;
   int _insertedPinCount = 0;
   final int _totalPinCount = 4;
   String _pin = "";
+  bool _isAuthenticated = false;
+  bool _redirect = false;
+
   @override
   void initState() {
     _isPinMode = true;
     _pin = "";
     _insertedPinCount = _pin.length;
+    setState(() {
+      _canCheckBiometrics = true;
+    });
     super.initState();
+  }
+
+  Future<void> _authValidator() async {
+    if (_isAuthenticated && await Authenticator.biometricLogin()) {
+      log("valid biometric");
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => RootPage()),
+        );
+      }
+    } else {
+      Helpers.showSnackbar(context, "Invalid Fingerprint");
+    }
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    var authenticated = false;
+    if (await DatabaseHelper().isBiometricEnabled()) {
+      try {
+        authenticated = await auth.authenticate(
+          localizedReason: "Scan your fingerprint",
+          persistAcrossBackgrounding: true,
+          biometricOnly: true,
+        );
+        setState(() {
+          _isAuthenticated = authenticated;
+        });
+      } catch (e) {
+        log("Biometrics: $e");
+      }
+      _authValidator();
+    } else {
+      if (mounted) {
+        Helpers.showSnackbar(
+          context,
+          "Biometric not enabled in the User settings. ",
+        );
+      }
+    }
   }
 
   @override
@@ -171,7 +221,9 @@ class _LoginPageState extends State<LoginPage> {
                   _buildDialTextButton("9"),
 
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      _authenticateWithBiometrics();
+                    },
                     icon: Icon(Icons.fingerprint, color: PURPLEFOREGROUND),
                   ),
                   _buildDialTextButton("0"),
