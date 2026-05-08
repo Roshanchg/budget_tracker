@@ -4,19 +4,19 @@ import 'package:serene/pages/RootPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await DatabaseHelper().removeDB();
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget  {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Serene Finance',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: const RootPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
