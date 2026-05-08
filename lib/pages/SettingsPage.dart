@@ -44,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _lastName = _currentName.split(" ").sublist(1).join(" ");
         _isLoading = false;
         _nameController.text = _currentName;
+        _selectedCurrency = _user!.currency;
       });
     }
   }
@@ -62,6 +63,18 @@ class _SettingsPageState extends State<SettingsPage> {
     );
     await DatabaseHelper().updateUser(newUser);
 
+    SessionStorage.instance.user = newUser;
+    await _getValues();
+  }
+
+  Future<void> changeCurrency() async {
+    User newUser = User(
+      pin: _user!.pin,
+      name: _user!.name,
+      biometric: _user!.biometric,
+      currency: _selectedCurrency,
+    );
+    await DatabaseHelper().updateUser(newUser);
     SessionStorage.instance.user = newUser;
     await _getValues();
   }
@@ -234,6 +247,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                     setState(() {
                                       _selectedCurrency = value!;
                                     });
+                                    changeCurrency();
                                   },
                                 ),
                               ),

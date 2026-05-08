@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
+import 'package:serene/Enums/currency.dart';
 import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Expense.dart';
@@ -162,7 +163,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          "Rs.${_availableBalance}",
+                          "${SessionStorage.instance.user!.currency.prettyName}${_availableBalance}",
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight(500),
@@ -188,7 +189,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text("Rs.", style: TextStyle(fontSize: 18)),
+                        Text(
+                          "${SessionStorage.instance.user!.currency.prettyName}",
+                          style: TextStyle(fontSize: 18),
+                        ),
                         const SizedBox(width: 20),
                         Container(
                           width: 100,

@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
+import 'package:serene/Enums/currency.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Expense.dart';
 import 'package:serene/classes/Income.dart';
@@ -25,10 +28,13 @@ class _ExpensePageState extends State<ExpensePage> {
 
   double? _totalExpenses;
 
+  Map<DateTime, List<Expense>> _filteredMap = {};
+
   @override
   void initState() {
     super.initState();
     _loadExpensesToMap();
+    _loadFilteredExpensesToMap();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _navigateToIncomePage();
     });
@@ -40,6 +46,57 @@ class _ExpensePageState extends State<ExpensePage> {
         context,
         MaterialPageRoute(builder: (context) => RootPage()),
       );
+    }
+  }
+
+  Future<void> _loadFilteredExpensesToMap() async {
+    CATEGORY? filterCat;
+    switch (_activeFilterIndex) {
+      case 0:
+        filterCat = null;
+        break;
+      case 1:
+        filterCat = CATEGORY.MISC;
+        break;
+      case 2:
+        filterCat = CATEGORY.SAVINGS;
+        break;
+      case 3:
+        filterCat = CATEGORY.SHOPPING;
+        break;
+      case 4:
+        filterCat = CATEGORY.FOOD;
+        break;
+      case 5:
+        filterCat = CATEGORY.TRANSPORTATION;
+        break;
+      case 6:
+        filterCat = CATEGORY.RENT;
+        break;
+      case 7:
+        filterCat = CATEGORY.GYM;
+        break;
+    }
+    if (filterCat != null) {
+      Map<DateTime, List<Expense>> tempMap = {};
+      for (var entry in _expensesMap.entries) {
+        List<Expense> tempList = [];
+        for (var item in entry.value) {
+          if (item.category == filterCat) {
+            tempList.add(item);
+          }
+        }
+        if (tempList.isNotEmpty) {
+          tempMap[entry.key] = tempList;
+        }
+      }
+      setState(() {
+        _filteredMap = tempMap;
+      });
+    } else {
+      setState(() {
+        _filteredMap = _expensesMap;
+      });
     }
   }
 
@@ -114,7 +171,7 @@ class _ExpensePageState extends State<ExpensePage> {
                       children: [
                         const Text("Total Spent this month"),
                         Text(
-                          "Rs.${_totalExpenses.toString()}",
+                          "${SessionStorage.instance.user!.currency.prettyName}${_totalExpenses.toString()}",
                           style: TextStyle(
                             fontWeight: FontWeight(600),
                             fontSize: 28,
@@ -162,6 +219,7 @@ class _ExpensePageState extends State<ExpensePage> {
                               setState(() {
                                 _activeFilterIndex = index;
                               });
+                              _loadFilteredExpensesToMap();
                             },
                             style: TextButton.styleFrom(
                               backgroundColor: (_activeFilterIndex == index)
@@ -189,6 +247,7 @@ class _ExpensePageState extends State<ExpensePage> {
                             setState(() {
                               _activeFilterIndex = index;
                             });
+                            _loadFilteredExpensesToMap();
                           },
                           style: TextButton.styleFrom(
                             backgroundColor: (_activeFilterIndex == index)
@@ -233,10 +292,10 @@ class _ExpensePageState extends State<ExpensePage> {
                     child: ListView.builder(
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: _expensesMap.keys.length,
+                      itemCount: _filteredMap.keys.length,
                       itemBuilder: (context, index) {
-                        DateTime dt = _expensesMap.keys.elementAt(index);
-                        List<Expense>? expenses = _expensesMap[dt] ?? [];
+                        DateTime dt = _filteredMap.keys.elementAt(index);
+                        List<Expense>? expenses = _filteredMap[dt] ?? [];
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -269,11 +328,11 @@ class _ExpensePageState extends State<ExpensePage> {
                                               decoration: BoxDecoration(
                                                 borderRadius:
                                                     BorderRadius.circular(50),
-                                                color: GREENBACKGROUND,
+                                                color: ex.category.bgcolor,
                                               ),
                                               child: Icon(
-                                                Icons.restaurant,
-                                                color: GREENFOREGROUND,
+                                                ex.category.icon,
+                                                color: ex.category.fgcolor,
                                               ),
                                             ),
                                             SizedBox(width: 20),
@@ -301,7 +360,7 @@ class _ExpensePageState extends State<ExpensePage> {
                                               ),
                                             ),
                                             Text(
-                                              "-Rs.${ex.amount.toString()}",
+                                              "-${SessionStorage.instance.user!.currency.prettyName}${ex.amount.toString()}",
                                               style: TextStyle(
                                                 fontWeight: FontWeight(600),
                                               ),

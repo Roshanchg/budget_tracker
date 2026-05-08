@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:serene/Enums/currency.dart';
 import 'package:serene/Enums/month.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Income.dart';
@@ -148,7 +149,7 @@ class _HomePageState extends State<HomePage> {
                                 style: TextStyle(fontWeight: FontWeight(450)),
                               ),
                               Text(
-                                "Rs.${_incomeValue.toString()}",
+                                "${SessionStorage.instance.user!.currency.prettyName}${_incomeValue.toString()}",
                                 style: TextStyle(
                                   fontWeight: FontWeight(700),
                                   fontSize: 20,
@@ -315,7 +316,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 const Text("Monthly Income"),
                                 Text(
-                                  "Rs.${_incomeValue.toString()}",
+                                  "${SessionStorage.instance.user!.currency.prettyName}${_incomeValue.toString()}",
                                   style: TextStyle(
                                     fontWeight: FontWeight(600),
                                     fontSize: 20,
@@ -362,7 +363,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 const Text("Monthly Expenses"),
                                 Text(
-                                  "Rs.${_totalExpenses.toString()}",
+                                  "${SessionStorage.instance.user!.currency.prettyName}${_totalExpenses.toString()}",
                                   style: TextStyle(
                                     fontWeight: FontWeight(600),
                                     fontSize: 20,
@@ -408,7 +409,7 @@ class _HomePageState extends State<HomePage> {
                               children: [
                                 const Text("Disposable"),
                                 Text(
-                                  "Rs.${_disposal.toString()}",
+                                  "${SessionStorage.instance.user!.currency.prettyName}${_disposal.toString()}",
                                   style: TextStyle(
                                     fontWeight: FontWeight(600),
                                     fontSize: 20,

@@ -8,4 +8,13 @@ extension CurrencyExtension on CURRENCY {
       orElse: () => throw ArgumentError('Invalid currency: $dbString'),
     );
   }
+
+  String get prettyName {
+    switch (this) {
+      case CURRENCY.NRP:
+        return "Rs.";
+      case CURRENCY.USD:
+        return "\$.";
+    }
+  }
 }

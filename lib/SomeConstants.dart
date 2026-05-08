@@ -9,7 +9,7 @@ const Color APPBAR_BACKGROUNDCOLOR = Color(0xffF7F7F7);
 const Color GREENFOREGROUND = Color(0xff15803D);
 const Color GREENBACKGROUND = Color(0xffDCFCE7);
 
-const Color REDFOREGROUND = Color(0xffBA1A1A);
+const Color REDFOREGROUND = Color.fromARGB(255, 204, 46, 46);
 const Color REDBACKGROUND = Color(0xffFFDAD6);
 
 const Color YELLOWFOREGROUND = Color(0xff765B00);

@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
+import 'package:serene/Enums/currency.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Budgets.dart';
 import 'package:serene/classes/Income.dart';
@@ -158,14 +159,14 @@ class _BudgetingPageState extends State<BudgetingPage> {
                               style: TextStyle(fontWeight: FontWeight(400)),
                             ),
                             Text(
-                              "Rs.${_totalBudget.toString()}",
+                              "${SessionStorage.instance.user!.currency.prettyName}${_totalBudget.toString()}",
                               style: TextStyle(
                                 fontWeight: FontWeight(700),
                                 fontSize: 20,
                               ),
                             ),
                             Text(
-                              "of Rs.${SessionStorage.instance.income!.amount.toString()}",
+                              "of ${SessionStorage.instance.user!.currency.prettyName}${SessionStorage.instance.income!.amount.toString()}",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: PRIMARYCOLOR,
@@ -303,7 +304,7 @@ class _BudgetingPageState extends State<BudgetingPage> {
                                       ),
                                     ),
                                     Text(
-                                      "Rs.${_budget.amount.toString()}",
+                                      "${SessionStorage.instance.user!.currency.prettyName}${_budget.amount.toString()}",
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight(500),
@@ -312,7 +313,7 @@ class _BudgetingPageState extends State<BudgetingPage> {
                                   ],
                                 ),
                                 Text(
-                                  "of Rs.${SessionStorage.instance.income!.amount.toString()} ",
+                                  "of ${SessionStorage.instance.user!.currency.prettyName}${SessionStorage.instance.income!.amount.toString()} ",
                                 ),
                               ],
                             ),

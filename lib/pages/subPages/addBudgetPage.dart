@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:serene/Enums/category.dart';
+import 'package:serene/Enums/currency.dart';
 import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Budgets.dart';
 import 'package:serene/dbHandling.dart';
@@ -197,7 +197,8 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
                       keyboardType: TextInputType.number,
                       autofocus: true,
                       decoration: InputDecoration(
-                        prefixText: "Rs. ",
+                        prefixText:
+                            "${SessionStorage.instance.user!.currency.prettyName} ",
                         border: InputBorder.none,
                         prefixStyle: TextStyle(
                           color: Colors.black,
