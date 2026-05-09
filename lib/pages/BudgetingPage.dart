@@ -8,6 +8,7 @@ import 'package:serene/SomeConstants.dart';
 import 'package:serene/classes/Budgets.dart';
 import 'package:serene/classes/Income.dart';
 import 'package:serene/dbHandling.dart';
+import 'package:serene/helpers.dart';
 import 'package:serene/pages/RootPage.dart';
 import 'package:serene/sessionManagement.dart';
 
@@ -23,6 +24,8 @@ class _BudgetingPageState extends State<BudgetingPage> {
   bool _dataExists = false;
   double? _totalBudget;
   List<Budgets> _allBudgets = [];
+
+  TextEditingController _editBudgetController = TextEditingController();
 
   @override
   void initState() {
@@ -248,15 +251,118 @@ class _BudgetingPageState extends State<BudgetingPage> {
                                   ),
                                 ),
                                 PopupMenuButton(
-                                  onSelected: (value) {
+                                  onSelected: (value) async {
                                     switch (value) {
                                       case "edit":
                                         log(value);
+                                        setState(() {
+                                          _editBudgetController.text = _budget
+                                              .amount
+                                              .toString();
+                                        });
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              scrollable: true,
+                                              title: Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.edit,
+                                                    color: PURPLEFOREGROUND,
+                                                  ),
+                                                  const SizedBox(width: 10),
+                                                  const Text(
+                                                    "Edit Budget",
+                                                    style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight: FontWeight(
+                                                        500,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              content: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("New Budget Amount"),
+                                                  SizedBox(
+                                                    height: 50,
+                                                    child: TextField(
+                                                      keyboardType:
+                                                          TextInputType.number,
+                                                      controller:
+                                                          _editBudgetController,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () async {
+                                                    if (await _budgetIsAvailable(
+                                                      _budget.amount,
+                                                    )) {
+                                                      log(
+                                                        _editBudgetController
+                                                            .text,
+                                                      );
+                                                      Budgets
+                                                      newBudget = Budgets(
+                                                        id: _budget.id,
+                                                        userId: _budget.userId,
+                                                        incomeId:
+                                                            _budget.incomeId,
+                                                        category:
+                                                            _budget.category,
+                                                        amount: double.parse(
+                                                          _editBudgetController
+                                                              .text,
+                                                        ),
+                                                        name: _budget.name,
+                                                      );
+                                                      await DatabaseHelper()
+                                                          .updateBudget(
+                                                            newBudget,
+                                                          );
+                                                      log(newBudget.toString());
+                                                      await _loadBudgetData();
+                                                      Navigator.pop(context);
+                                                    }
+                                                  },
+                                                  style: TextButton.styleFrom(
+                                                    backgroundColor:
+                                                        GREENFOREGROUND,
+                                                  ),
+                                                  child: const Text(
+                                                    "Confirm",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text("Cancel"),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+
                                         break;
 
                                       case "delete":
                                         log(value);
-
+                                        await DatabaseHelper().deleteBudget(
+                                          _budget.id!,
+                                        );
+                                        await _loadBudgetData();
                                         break;
                                       default:
                                         return;
@@ -350,6 +456,31 @@ class _BudgetingPageState extends State<BudgetingPage> {
               ),
             ],
           );
+  }
+
+  Future<bool> _budgetIsAvailable(double currentBudget) async {
+    double totalBudget = await DatabaseHelper().getTotalBudgetAmountById(
+      SessionStorage.instance.income!.id!,
+    );
+    double avialableBudget =
+        SessionStorage.instance.income!.amount - totalBudget - currentBudget;
+    double? budgetAmount;
+    try {
+      budgetAmount = double.parse(_editBudgetController.text);
+    } catch (e) {
+      Helpers.showSnackbar(context, "Invalid Budget field");
+      return false;
+    }
+
+    if (avialableBudget < budgetAmount) {
+      Helpers.showSnackbar(
+        context,
+        "Budget Amount exceeds available money for allocation.",
+      );
+      return false;
+    } else {
+      return true;
+    }
   }
 
   Widget _buildGridPane() {
