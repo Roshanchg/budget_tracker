@@ -339,15 +339,54 @@ class _SettingsPageState extends State<SettingsPage> {
                       height: 40,
                       child: TextButton(
                         onPressed: () async {
-                          await DatabaseHelper().removeDB();
-                          if (mounted) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) => RegisterPage(),
-                              ),
-                              (Route<dynamic> route) => false,
-                            );
-                          }
+                          await showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: Row(
+                                  children: [
+                                    Icon(Icons.warning, color: Colors.red),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      "Do you want to delete all data?",
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () async {
+                                      await DatabaseHelper().removeDB();
+                                      if (mounted) {
+                                        Navigator.of(
+                                          context,
+                                        ).pushAndRemoveUntil(
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                RegisterPage(),
+                                          ),
+                                          (Route<dynamic> route) => false,
+                                        );
+                                      }
+                                    },
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: REDBACKGROUND,
+                                    ),
+                                    child: Text(
+                                      "Yes, Delete it",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: Text("No, Go back"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                         child: const Text(
                           "Erase All Data",
