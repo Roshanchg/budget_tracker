@@ -113,14 +113,13 @@ class _AddIncomePageState extends State<AddIncomePage> {
           end: 20,
           bottom: 0,
         ),
-        child: Column(
+        child: ListView(
           children: [
             Container(
               color: null,
               decoration: BoxDecoration(color: Colors.white),
               padding: EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text(
                     "Amount Received",

@@ -111,7 +111,7 @@ class _AddBudgetPageState extends State<AddBudgetPage> {
           start: 28,
           end: 28,
         ),
-        child: Column(
+        child: ListView(
           children: [
             // color: Color(0x40E1D4FD)
             Container(

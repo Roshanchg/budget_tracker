@@ -140,7 +140,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
           ? Center(child: const Text("Error Occured"))
           : Padding(
               padding: EdgeInsetsGeometry.all(20),
-              child: Column(
+              child: ListView(
                 children: [
                   Container(
                     color: null,
